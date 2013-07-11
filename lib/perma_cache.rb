@@ -1,8 +1,13 @@
 require "perma_cache/version"
 
 module PermaCache
-  include ActiveSupport::Configurable
-  config.version = 1
+  def self.version= v
+    @version ||= v
+  end
+
+  def self.version
+    @verison || 1
+  end
 
   def perma_cache(method_name, options = {})
     class_eval do
@@ -30,7 +35,7 @@ module PermaCache
         def perma_cache_key(obj)
           [
             "perma_cache",
-            "v#{PermaCache.config.version}",
+            "v#{PermaCache.version}",
             (obj.cache_key rescue nil) || (obj.name rescue nil) || obj.class.name
           ]
         end
