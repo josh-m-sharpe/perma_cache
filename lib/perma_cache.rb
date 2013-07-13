@@ -6,7 +6,7 @@ module PermaCache
   end
 
   def self.version
-    @verison || 1
+    @version || 1
   end
 
   def perma_cache(method_name, options = {})
