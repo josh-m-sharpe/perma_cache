@@ -12,8 +12,12 @@ module PermaCache
   def perma_cache(method_name, options = {})
     class_eval do
       define_method "#{method_name}_key" do
-        key = perma_cache_key(self)
-        key << send(options[:obj]).cache_key if options[:obj]
+        if options[:obj]
+          key = perma_cache_key(self)
+          key << send(options[:obj]).cache_key if options[:obj]
+        else
+          key = [self]
+        end
         key << method_name
         puts key = key.flatten.reject(&:blank?).join('/').downcase
         key
