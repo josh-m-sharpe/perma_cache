@@ -44,5 +44,5 @@ module PermaCache
   end
 end
 
-Module.send(:include, PermaCache)
+Object.send(:include, PermaCache)
 
