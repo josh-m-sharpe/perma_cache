@@ -33,7 +33,7 @@ module PermaCache
 
       define_method "#{method_name}!" do
         send("#{method_name}_without_perma_cache").tap do |result|
-          PermaCache.cache.write(send("#{method_name}_key"), result, :expires_in => 72.hours)
+          PermaCache.cache.write(send("#{method_name}_key"), result)
         end
       end
 
