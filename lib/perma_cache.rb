@@ -20,14 +20,25 @@ module PermaCache
   def perma_cache(method_name, options = {})
     class_eval do
       define_method "#{method_name}_key" do
+        key = []
+        key << "perma_cache"
+        key << "v#{PermaCache.version}"
+
+        key << ((self.name rescue nil) || self.class.name)
+
         if options[:obj]
-          key = perma_cache_key(self)
-          key << send(options[:obj]).cache_key if options[:obj]
-        else
-          key = [self]
+          obj = send(options[:obj])
+          case obj
+          when ActiveRecord::Base
+            key << obj.class.model_name.cache_key
+            key << obj.id
+          end
         end
+
+        key << self.perma_cache_key rescue nil
         key << method_name
-        puts key = key.flatten.reject(&:blank?).join('/').downcase
+        key = key.flatten.reject(&:blank?).join('/').downcase
+        puts key unless Rails.env.test?
         key
       end
 
@@ -42,16 +53,6 @@ module PermaCache
         send("#{method_name}!")
       end
       alias_method_chain method_name, :perma_cache
-
-      unless respond_to?(:perma_cache_key)
-        def perma_cache_key(obj)
-          [
-            "perma_cache",
-            "v#{PermaCache.version}",
-            (obj.cache_key rescue nil) || (obj.name rescue nil) || obj.class.name
-          ]
-        end
-      end
     end
   end
 end
