@@ -48,8 +48,12 @@ module PermaCache
         end
       end
 
+      define_method "#{method_name}_get_perma_cache" do
+        PermaCache.cache.read(send("#{method_name}_key"))
+      end
+
       define_method "#{method_name}_with_perma_cache" do
-        PermaCache.cache.read(send("#{method_name}_key")) ||
+        send("#{method_name}_get_perma_cache") ||
         send("#{method_name}!")
       end
       alias_method_chain method_name, :perma_cache
