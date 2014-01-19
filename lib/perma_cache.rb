@@ -32,6 +32,8 @@ module PermaCache
           when ActiveRecord::Base
             key << obj.class.model_name.cache_key
             key << obj.id
+          else
+            key << obj
           end
         end
 
