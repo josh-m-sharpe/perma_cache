@@ -33,6 +33,7 @@ module PermaCache
             key << obj.class.model_name.cache_key
             key << obj.id
           else
+            key << options[:obj]
             key << obj
           end
         end
