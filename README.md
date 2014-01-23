@@ -23,6 +23,7 @@ Or install it yourself as:
 
 ## Usage
 
+```
 class SomeKlass
   def slow_method
     sleep 10
@@ -30,6 +31,7 @@ class SomeKlass
   end
   perma_cache :slow_method
 end
+```
 
 ```
 > Benchmark.measure{ SomeKlass.new.slow_method }.real
