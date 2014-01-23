@@ -1,6 +1,7 @@
 require "perma_cache/version"
 
 module PermaCache
+  class UndefinedCache < StandardError ; end
   def self.version= v
     @version = v
   end
@@ -10,7 +11,7 @@ module PermaCache
   end
 
   def self.cache
-    @cache ||= Rails.cache
+    @cache || raise(UndefinedCache, "Please define a cache object: (PermaCache.cache = Rails.cache)")
   end
 
   def self.cache= c
