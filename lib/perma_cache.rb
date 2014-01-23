@@ -4,6 +4,7 @@ require "perma_cache/version"
 
 module PermaCache
   class UndefinedCache < StandardError ; end
+
   def self.version= v
     @version = v
   end
@@ -55,7 +56,10 @@ module PermaCache
 
           key << method_name
 
-          key = key.flatten.reject(&:empty?).join('/')
+          key = key.flatten.reject do |k|
+            (k.empty? rescue nil) ||
+            (k.nil? rescue nil)
+          end.join('/')
           key
         end
 
