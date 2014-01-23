@@ -56,10 +56,15 @@ module PermaCache
 
           key << method_name
 
+          if options[:version]
+            key << "v#{options[:version]}"
+          end
+
           key = key.flatten.reject do |k|
             (k.empty? rescue nil) ||
             (k.nil? rescue nil)
           end.join('/')
+
           key
         end
 

@@ -15,6 +15,12 @@ class KlassOne
   end
   perma_cache :method2, :obj => :other_klass
 
+  def method3
+    sleep 1
+    3
+  end
+  perma_cache :method3, :version => 2
+
   def other_klass
     KlassTwo.new
   end
@@ -118,6 +124,11 @@ class PermaCacheTest < Test::Unit::TestCase
       PermaCache.cache = cache_obj
       obj.expects(:sleep).with(1).once
       assert_equal 1, obj.method1!
+    end
+  end
+  context "version option" do
+    should "add that key/value to the cache key" do
+      assert_equal "perma_cache/v1/KlassOne/method3/v2", KlassOne.new.method3_key
     end
   end
 end
