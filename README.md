@@ -25,8 +25,9 @@ Or install it yourself as:
 
 ```
 class SomeKlass
+  include PermaCache
   def slow_method
-    sleep 10
+    sleep 2
     1
   end
   perma_cache :slow_method
@@ -34,12 +35,15 @@ end
 ```
 
 ```
-> Benchmark.measure{ SomeKlass.new.slow_method }.real
-=> 2.0035040378570557
-> Benchmark.measure{ SomeKlass.new.slow_method }.real
-=> 0.0010859966278076172
-> Benchmark.measure{ SomeKlass.new.slow_method! }.real
- => 2.001610040664673
+> Benchmark.measure{ puts SomeKlass.new.slow_method }.real
+1
+=> 2.003525972366333
+> Benchmark.measure{ puts SomeKlass.new.slow_method }.real
+1
+=> 0.001032114028930664
+> Benchmark.measure{ puts SomeKlass.new.slow_method! }.real
+1
+=> 2.0027248859405518
 ```
 
 ## Testing

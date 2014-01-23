@@ -1,3 +1,5 @@
+require 'active_support/core_ext/module/aliasing'
+
 require "perma_cache/version"
 
 module PermaCache
@@ -18,51 +20,63 @@ module PermaCache
     @cache = c
   end
 
-  def perma_cache(method_name, options = {})
-    class_eval do
-      define_method "#{method_name}_key" do
-        key = []
-        key << "perma_cache"
-        key << "v#{PermaCache.version}"
+  def self.build_key_from_object(obj)
+    # Don't want to add this to Object
+    Array.new.tap do |arr|
+      if obj.respond_to?(:cache_key)
+        arr << obj.cache_key
+      else
+        arr << obj.class.name
 
-        key << ((self.name rescue nil) || self.class.name)
+        if obj.respond_to?(:id)
+          arr << obj.id
+        end
+      end
+    end
+  end
 
-        if options[:obj]
-          obj = send(options[:obj])
-          if defined?(ActiveRecord) && obj.kind_of?(ActiveRecord::Base)
-            key << obj.class.model_name.cache_key
-            key << obj.id
-          else
-            key << options[:obj]
-            key << obj
+  def self.included(base)
+    base.extend ClassMethods
+  end
+
+  module ClassMethods
+    def perma_cache(method_name, options = {})
+      class_eval do
+        define_method "#{method_name}_key" do
+          key = []
+          key << "perma_cache"
+          key << "v#{PermaCache.version}"
+
+          key << PermaCache.build_key_from_object(self)
+
+          if options[:obj]
+            key << PermaCache.build_key_from_object(send(options[:obj]))
+          end
+
+          key << method_name
+
+          key = key.flatten.reject(&:empty?).join('/')
+          key
+        end
+
+        define_method "#{method_name}!" do
+          send("#{method_name}_without_perma_cache").tap do |result|
+            PermaCache.cache.write(send("#{method_name}_key"), result)
           end
         end
 
-        key << self.perma_cache_key rescue nil
-        key << method_name
-        key = key.flatten.reject(&:blank?).join('/').downcase
-        puts key unless Rails.env.test?
-        key
-      end
-
-      define_method "#{method_name}!" do
-        send("#{method_name}_without_perma_cache").tap do |result|
-          PermaCache.cache.write(send("#{method_name}_key"), result, :expires => options[:expires])
+        define_method "#{method_name}_get_perma_cache" do
+          PermaCache.cache.read(send("#{method_name}_key"))
         end
-      end
 
-      define_method "#{method_name}_get_perma_cache" do
-        PermaCache.cache.read(send("#{method_name}_key"))
-      end
+        define_method "#{method_name}_with_perma_cache" do
+          send("#{method_name}_get_perma_cache") ||
+          send("#{method_name}!")
+        end
 
-      define_method "#{method_name}_with_perma_cache" do
-        send("#{method_name}_get_perma_cache") ||
-        send("#{method_name}!")
+        alias_method_chain method_name, :perma_cache
       end
-      alias_method_chain method_name, :perma_cache
     end
   end
 end
-
-Object.send(:include, PermaCache)
 
