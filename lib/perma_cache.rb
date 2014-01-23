@@ -28,8 +28,7 @@ module PermaCache
 
         if options[:obj]
           obj = send(options[:obj])
-          case obj
-          when ActiveRecord::Base
+          if defined?(ActiveRecord) && obj.kind_of?(ActiveRecord::Base)
             key << obj.class.model_name.cache_key
             key << obj.id
           else
