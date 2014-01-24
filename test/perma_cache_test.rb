@@ -22,7 +22,7 @@ class KlassOne
     sleep 1
     3
   end
-  perma_cache :method3, :version => 2
+  perma_cache :method3, :version => 2, :expires_in => 5
 
   def other_klass
     KlassTwo.new
@@ -103,7 +103,7 @@ class PermaCacheTest < Test::Unit::TestCase
       obj = KlassOne.new
       cache_obj = mock
       cache_obj.expects(:read).with(obj.method1_perma_cache_key).once.returns(nil)
-      cache_obj.expects(:write).with(obj.method1_perma_cache_key, 1).once
+      cache_obj.expects(:write).with(obj.method1_perma_cache_key, 1, :expires_in => nil).once
       PermaCache.cache = cache_obj
       obj.expects(:sleep).with(1).once
       assert_equal 1, obj.method1
@@ -123,7 +123,7 @@ class PermaCacheTest < Test::Unit::TestCase
       obj = KlassOne.new
       cache_obj = mock
       cache_obj.expects(:read).never
-      cache_obj.expects(:write).with(obj.method1_perma_cache_key, 1).once
+      cache_obj.expects(:write).with(obj.method1_perma_cache_key, 1, :expires_in => nil).once
       PermaCache.cache = cache_obj
       obj.expects(:sleep).with(1).once
       assert_equal 1, obj.method1!
@@ -137,6 +137,17 @@ class PermaCacheTest < Test::Unit::TestCase
   context "user defined keys" do
     should "should append themselves to the cache key" do
       assert_equal "perma_cache/v1/KlassOne/some_other_class/123/method2/more_things", KlassOne.new.method2_perma_cache_key
+    end
+  end
+  context "setting expires_in" do
+    should "pass the value through to #write" do
+      obj = KlassOne.new
+      cache_obj = mock
+      cache_obj.expects(:read).with(obj.method3_perma_cache_key).returns(nil).once
+      cache_obj.expects(:write).with(obj.method3_perma_cache_key, 3, :expires_in => 5).once
+      obj.expects(:sleep).with(1).once
+      PermaCache.cache = cache_obj
+      obj.method3
     end
   end
 end

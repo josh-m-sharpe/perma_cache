@@ -77,7 +77,7 @@ module PermaCache
 
         define_method "#{method_name}!" do
           send("#{method_name}_without_perma_cache").tap do |result|
-            PermaCache.cache.write(send("#{method_name}_perma_cache_key"), result)
+            PermaCache.cache.write(send("#{method_name}_perma_cache_key"), result, :expires_in => options[:expires_in])
           end
         end
 
