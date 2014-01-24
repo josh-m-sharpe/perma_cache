@@ -14,6 +14,9 @@ class KlassOne
     2
   end
   perma_cache :method2, :obj => :other_klass
+  def method2_key
+    "more things"
+  end
 
   def method3
     sleep 1
@@ -91,7 +94,7 @@ class PermaCacheTest < Test::Unit::TestCase
   context "KlassOne" do
     should "have some additional methods defined" do
       obj = KlassOne.new
-      assert obj.respond_to?(:method1_key)
+      assert obj.respond_to?(:method1_perma_cache_key)
       assert obj.respond_to?(:method1!)
       assert obj.respond_to?(:method1_with_perma_cache)
     end
@@ -99,8 +102,8 @@ class PermaCacheTest < Test::Unit::TestCase
     should "calling #method1 should write and return the result if the cache is empty" do
       obj = KlassOne.new
       cache_obj = mock
-      cache_obj.expects(:read).with(obj.method1_key).once.returns(nil)
-      cache_obj.expects(:write).with(obj.method1_key, 1).once
+      cache_obj.expects(:read).with(obj.method1_perma_cache_key).once.returns(nil)
+      cache_obj.expects(:write).with(obj.method1_perma_cache_key, 1).once
       PermaCache.cache = cache_obj
       obj.expects(:sleep).with(1).once
       assert_equal 1, obj.method1
@@ -109,7 +112,7 @@ class PermaCacheTest < Test::Unit::TestCase
     should "calling #method1 should read the cache, but not write it, if the cache is present" do
       obj = KlassOne.new
       cache_obj = mock
-      cache_obj.expects(:read).with(obj.method1_key).once.returns(123)
+      cache_obj.expects(:read).with(obj.method1_perma_cache_key).once.returns(123)
       cache_obj.expects(:write).never
       PermaCache.cache = cache_obj
       obj.expects(:sleep).never
@@ -120,7 +123,7 @@ class PermaCacheTest < Test::Unit::TestCase
       obj = KlassOne.new
       cache_obj = mock
       cache_obj.expects(:read).never
-      cache_obj.expects(:write).with(obj.method1_key, 1).once
+      cache_obj.expects(:write).with(obj.method1_perma_cache_key, 1).once
       PermaCache.cache = cache_obj
       obj.expects(:sleep).with(1).once
       assert_equal 1, obj.method1!
@@ -128,7 +131,12 @@ class PermaCacheTest < Test::Unit::TestCase
   end
   context "version option" do
     should "add that key/value to the cache key" do
-      assert_equal "perma_cache/v1/KlassOne/method3/v2", KlassOne.new.method3_key
+      assert_equal "perma_cache/v1/KlassOne/method3/v2", KlassOne.new.method3_perma_cache_key
+    end
+  end
+  context "user defined keys" do
+    should "should append themselves to the cache key" do
+      assert_equal "perma_cache/v1/KlassOne/some_other_class/123/method2/more_things", KlassOne.new.method2_perma_cache_key
     end
   end
 end

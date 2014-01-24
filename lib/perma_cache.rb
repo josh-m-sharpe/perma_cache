@@ -43,7 +43,7 @@ module PermaCache
   module ClassMethods
     def perma_cache(method_name, options = {})
       class_eval do
-        define_method "#{method_name}_key" do
+        define_method "#{method_name}_base_key" do
           key = []
           key << "perma_cache"
           key << "v#{PermaCache.version}"
@@ -68,14 +68,21 @@ module PermaCache
           key
         end
 
+        define_method "#{method_name}_perma_cache_key" do
+          [
+            send("#{method_name}_base_key"),
+            (send("#{method_name}_key") rescue nil)
+          ].compact.join('/').gsub(' ','_')
+        end
+
         define_method "#{method_name}!" do
           send("#{method_name}_without_perma_cache").tap do |result|
-            PermaCache.cache.write(send("#{method_name}_key"), result)
+            PermaCache.cache.write(send("#{method_name}_perma_cache_key"), result)
           end
         end
 
         define_method "#{method_name}_get_perma_cache" do
-          PermaCache.cache.read(send("#{method_name}_key"))
+          PermaCache.cache.read(send("#{method_name}_perma_cache_key"))
         end
 
         define_method "#{method_name}_with_perma_cache" do
