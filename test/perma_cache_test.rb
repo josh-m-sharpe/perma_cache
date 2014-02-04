@@ -107,6 +107,7 @@ class PermaCacheTest < Test::Unit::TestCase
       PermaCache.cache = cache_obj
       obj.expects(:sleep).with(1).once
       assert_equal 1, obj.method1
+      assert obj.method1_was_rebuilt?
     end
 
     should "calling #method1 should read the cache, but not write it, if the cache is present" do
@@ -117,6 +118,7 @@ class PermaCacheTest < Test::Unit::TestCase
       PermaCache.cache = cache_obj
       obj.expects(:sleep).never
       assert_equal 123, obj.method1
+      assert !obj.method1_was_rebuilt?
     end
 
     should "calling #method1! should write the cache, but not read from it" do

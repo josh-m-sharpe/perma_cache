@@ -85,9 +85,20 @@ module PermaCache
           PermaCache.cache.read(send("#{method_name}_perma_cache_key"))
         end
 
+        was_rebuilt_inst_var = "@#{method_name}_was_rebuilt"
+
         define_method "#{method_name}_with_perma_cache" do
+          instance_variable_set(was_rebuilt_inst_var , false)
+
           send("#{method_name}_get_perma_cache") ||
-          send("#{method_name}!")
+          (
+            instance_variable_set(was_rebuilt_inst_var , true) &&
+            send("#{method_name}!")
+          )
+        end
+
+        define_method "#{method_name}_was_rebuilt?" do
+          instance_variable_get(was_rebuilt_inst_var ) == true
         end
 
         alias_method_chain method_name, :perma_cache
