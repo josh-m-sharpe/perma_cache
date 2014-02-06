@@ -43,6 +43,9 @@ module PermaCache
   module ClassMethods
     def perma_cache(method_name, options = {})
       class_eval do
+
+        was_rebuilt_inst_var = "@#{method_name}_was_rebuilt"
+
         define_method "#{method_name}_base_key" do
           key = []
           key << "perma_cache"
@@ -76,6 +79,7 @@ module PermaCache
         end
 
         define_method "#{method_name}!" do
+          instance_variable_set(was_rebuilt_inst_var , true)
           send("#{method_name}_without_perma_cache").tap do |result|
             PermaCache.cache.write(send("#{method_name}_perma_cache_key"), result, :expires_in => options[:expires_in])
           end
@@ -84,8 +88,6 @@ module PermaCache
         define_method "#{method_name}_get_perma_cache" do
           PermaCache.cache.read(send("#{method_name}_perma_cache_key"))
         end
-
-        was_rebuilt_inst_var = "@#{method_name}_was_rebuilt"
 
         define_method "#{method_name}_with_perma_cache" do
           instance_variable_set(was_rebuilt_inst_var , false)

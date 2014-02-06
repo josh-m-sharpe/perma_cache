@@ -129,6 +129,7 @@ class PermaCacheTest < Test::Unit::TestCase
       PermaCache.cache = cache_obj
       obj.expects(:sleep).with(1).once
       assert_equal 1, obj.method1!
+      assert obj.method1_was_rebuilt?
     end
   end
   context "version option" do
