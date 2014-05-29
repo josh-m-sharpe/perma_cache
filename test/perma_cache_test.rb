@@ -30,14 +30,28 @@ class KlassOne
 end
 
 class KlassTwo
+  include PermaCache
+
   def cache_key
     "some_other_class/123"
   end
 end
 
 class KlassThree
+  include PermaCache
+
   def id
     234
+  end
+end
+
+module ModuleOne
+  class << self
+    include PermaCache
+    def module_one_method
+      345
+    end
+    perma_cache :module_one_method
   end
 end
 
@@ -101,7 +115,7 @@ class PermaCacheTest < Test::Unit::TestCase
 
     should "calling #method1 should write and return the result if the cache is empty" do
       obj = KlassOne.new
-      cache_obj = mock
+      cache_obj = Object.new
       cache_obj.expects(:read).with(obj.method1_perma_cache_key).once.returns(nil)
       cache_obj.expects(:write).with(obj.method1_perma_cache_key, 1, :expires_in => nil).once
       PermaCache.cache = cache_obj
@@ -112,7 +126,7 @@ class PermaCacheTest < Test::Unit::TestCase
 
     should "calling #method1 should read the cache, but not write it, if the cache is present" do
       obj = KlassOne.new
-      cache_obj = mock
+      cache_obj = Object.new
       cache_obj.expects(:read).with(obj.method1_perma_cache_key).once.returns(123)
       cache_obj.expects(:write).never
       PermaCache.cache = cache_obj
@@ -123,7 +137,7 @@ class PermaCacheTest < Test::Unit::TestCase
 
     should "calling #method1! should write the cache, but not read from it" do
       obj = KlassOne.new
-      cache_obj = mock
+      cache_obj = Object.new
       cache_obj.expects(:read).never
       cache_obj.expects(:write).with(obj.method1_perma_cache_key, 1, :expires_in => nil).once
       PermaCache.cache = cache_obj
@@ -134,23 +148,29 @@ class PermaCacheTest < Test::Unit::TestCase
   end
   context "version option" do
     should "add that key/value to the cache key" do
-      assert_equal "perma_cache/v1/KlassOne/method3/v2", KlassOne.new.method3_perma_cache_key
+      assert_equal "perma_cache/v1/KlassOne/v2/method3", KlassOne.new.method3_perma_cache_key
     end
   end
   context "user defined keys" do
     should "should append themselves to the cache key" do
-      assert_equal "perma_cache/v1/KlassOne/some_other_class/123/method2/more_things", KlassOne.new.method2_perma_cache_key
+      assert_equal "perma_cache/v1/KlassOne/some_other_class/123/more_things/method2", KlassOne.new.method2_perma_cache_key
     end
   end
   context "setting expires_in" do
     should "pass the value through to #write" do
       obj = KlassOne.new
-      cache_obj = mock
+      cache_obj = Object.new
       cache_obj.expects(:read).with(obj.method3_perma_cache_key).returns(nil).once
       cache_obj.expects(:write).with(obj.method3_perma_cache_key, 3, :expires_in => 5).once
       obj.expects(:sleep).with(1).once
       PermaCache.cache = cache_obj
       obj.method3
+    end
+  end
+
+  context "a module" do
+    should "set the perma cache key" do
+      assert_equal "perma_cache/v1/ModuleOne/module_one_method", ModuleOne.module_one_method_perma_cache_key
     end
   end
 end

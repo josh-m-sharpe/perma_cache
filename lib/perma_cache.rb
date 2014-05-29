@@ -24,11 +24,11 @@ module PermaCache
   def self.build_key_from_object(obj)
     # Don't want to add this to Object
     Array.new.tap do |arr|
+
       if obj.respond_to?(:cache_key)
         arr << obj.cache_key
       else
-        arr << obj.class.name
-
+        arr << (obj.is_a?(Module) ? obj.name : obj.class.name)
         if obj.respond_to?(:id)
           arr << obj.id
         end
@@ -57,16 +57,9 @@ module PermaCache
             key << PermaCache.build_key_from_object(send(options[:obj]))
           end
 
-          key << method_name
-
           if options[:version]
             key << "v#{options[:version]}"
           end
-
-          key = key.flatten.reject do |k|
-            (k.empty? rescue nil) ||
-            (k.nil? rescue nil)
-          end.join('/')
 
           key
         end
@@ -74,8 +67,9 @@ module PermaCache
         define_method "#{method_name}_perma_cache_key" do
           [
             send("#{method_name}_base_key"),
-            (send("#{method_name}_key") rescue nil)
-          ].compact.join('/').gsub(' ','_')
+            (send("#{method_name}_key") rescue nil),
+            method_name
+          ].flatten.compact.map(&:to_s).reject{|k| k.empty?}.join('/').gsub(' ','_')
         end
 
         define_method "#{method_name}!" do
