@@ -41,8 +41,12 @@ module PermaCache
   end
 
   module ClassMethods
-    def perma_cache(method_name, options = {})
+    def perma_cache(original_name, options = {})
       class_eval do
+        regex = /[\?\!]\Z/
+        method_name   = original_name.to_s.gsub("!", "_exclamation").gsub("?", "_question")
+        method_base   = original_name.to_s.gsub(regex,'')
+        method_suffix = original_name.to_s.match(regex)
 
         was_rebuilt_inst_var = "@#{method_name}_was_rebuilt"
 
@@ -74,7 +78,7 @@ module PermaCache
 
         define_method "#{method_name}!" do
           instance_variable_set(was_rebuilt_inst_var , true)
-          send("#{method_name}_without_perma_cache").tap do |result|
+          send("#{method_base}_without_perma_cache#{method_suffix}").tap do |result|
             PermaCache.cache.write(send("#{method_name}_perma_cache_key"), result, :expires_in => options[:expires_in])
           end
         end
@@ -83,7 +87,7 @@ module PermaCache
           PermaCache.cache.read(send("#{method_name}_perma_cache_key"))
         end
 
-        define_method "#{method_name}_with_perma_cache" do
+        define_method "#{method_base}_with_perma_cache#{method_suffix}" do
           instance_variable_set(was_rebuilt_inst_var , false)
 
           send("#{method_name}_get_perma_cache") ||
@@ -97,7 +101,7 @@ module PermaCache
           instance_variable_get(was_rebuilt_inst_var ) == true
         end
 
-        alias_method_chain method_name, :perma_cache
+        alias_method_chain [method_base, method_suffix].join, :perma_cache
       end
     end
   end

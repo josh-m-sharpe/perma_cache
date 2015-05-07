@@ -24,6 +24,18 @@ class KlassOne
   end
   perma_cache :method3, :version => 2, :expires_in => 5
 
+  def question?
+    sleep 1
+    4
+  end
+  perma_cache :question?
+
+  def exclamation!
+    sleep 1
+    4
+  end
+  perma_cache :exclamation!
+
   def other_klass
     KlassTwo.new
   end
@@ -106,11 +118,37 @@ class PermaCacheTest < Minitest::Test
   end
 
   context "KlassOne" do
-    should "have some additional methods defined" do
+    should "have some methods defined for :method1" do
       obj = KlassOne.new
+      assert obj.respond_to?(:method1_base_key)
       assert obj.respond_to?(:method1_perma_cache_key)
       assert obj.respond_to?(:method1!)
+      assert obj.respond_to?(:method1_get_perma_cache)
       assert obj.respond_to?(:method1_with_perma_cache)
+      assert obj.respond_to?(:method1_without_perma_cache)
+      assert obj.respond_to?(:method1_was_rebuilt?)
+    end
+
+    should "have some methods defined for :question?" do
+      obj = KlassOne.new
+      assert obj.respond_to?(:question_question_base_key)
+      assert obj.respond_to?(:question_question_perma_cache_key)
+      assert obj.respond_to?(:question_question!)
+      assert obj.respond_to?(:question_question_get_perma_cache)
+      assert obj.respond_to?(:question_with_perma_cache?)
+      assert obj.respond_to?(:question_without_perma_cache?)
+      assert obj.respond_to?(:question_question_was_rebuilt?)
+    end
+
+    should "have some methods defined for :exclamation!" do
+      obj = KlassOne.new
+      assert obj.respond_to?(:exclamation_exclamation_base_key)
+      assert obj.respond_to?(:exclamation_exclamation_perma_cache_key)
+      assert obj.respond_to?(:exclamation_exclamation!)
+      assert obj.respond_to?(:exclamation_exclamation_get_perma_cache)
+      assert obj.respond_to?(:exclamation_with_perma_cache!)
+      assert obj.respond_to?(:exclamation_without_perma_cache!)
+      assert obj.respond_to?(:exclamation_exclamation_was_rebuilt?)
     end
 
     should "calling #method1 should write and return the result if the cache is empty" do
