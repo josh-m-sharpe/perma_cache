@@ -69,6 +69,16 @@ end
 
 class PermaCacheTest < Minitest::Test
 
+  def test_invalid_keys_should_raise_an_exception
+    assert_raises RuntimeError, "expected keys are [:expires_in, :obj, :version]" do
+      KlassOne.class_eval do
+        def invalid_key
+        end
+        perma_cache :invalid_key, :foobar => 123
+      end
+    end
+  end
+
   context "build_key_from_object" do
     context  "for a class" do
       context "That responds to cache_key" do

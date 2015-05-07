@@ -1,4 +1,4 @@
-require 'active_support/core_ext/module/aliasing'
+require 'active_support/all'
 
 require "perma_cache/version"
 
@@ -42,6 +42,9 @@ module PermaCache
 
   module ClassMethods
     def perma_cache(original_name, options = {})
+      options.symbolize_keys!
+      valid_keys = [:expires_in, :obj, :version]
+      raise "expected keys are #{valid_keys}" if (options.keys - valid_keys).present?
       class_eval do
         regex = /[\?\!]\Z/
         method_name   = original_name.to_s.gsub("!", "_exclamation").gsub("?", "_question")
