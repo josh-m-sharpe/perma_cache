@@ -55,7 +55,7 @@ module ModuleOne
   end
 end
 
-class PermaCacheTest < Test::Unit::TestCase
+class PermaCacheTest < Minitest::Test
 
   context "build_key_from_object" do
     context  "for a class" do
@@ -87,7 +87,7 @@ class PermaCacheTest < Test::Unit::TestCase
   context "calling cache" do
     context "without setting a cache source" do
       setup do
-        PermaCache.send :remove_instance_variable, :@cache
+        PermaCache.send :remove_instance_variable, :@cache rescue nil
       end
       should "raise" do
         assert_raises PermaCache::UndefinedCache do

@@ -1,9 +1,10 @@
 require "rubygems"
-require 'test/unit'
-require 'shoulda'
-require 'mocha/test_unit'
-require 'debugger'
-
 require 'bundler/setup'
+
+require 'byebug'
+require 'minitest/autorun'
+require 'mocha/mini_test'
+require 'shoulda'
+
 require 'perma_cache'
 
