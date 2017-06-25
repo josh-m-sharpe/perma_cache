@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    perma_cache (0.0.8)
+    perma_cache (0.0.9)
       rails
 
 GEM
@@ -120,3 +120,6 @@ DEPENDENCIES
   perma_cache!
   rake
   shoulda
+
+BUNDLED WITH
+   1.15.1
