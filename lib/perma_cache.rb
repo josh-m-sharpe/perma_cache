@@ -17,7 +17,7 @@ module PermaCache
     @cache || raise(UndefinedCache, "Please define a cache object: (PermaCache.cache = Rails.cache)")
   end
 
-  def self.cache= c
+  def self.cache=(c)
     @cache = c
   end
 
@@ -90,13 +90,14 @@ module PermaCache
           PermaCache.cache.read(send("#{method_name}_perma_cache_key"))
         end
 
-        define_method "#{method_base}_with_perma_cache#{method_suffix}" do
+        with_perma_cache_method_name = "#{method_base}_with_perma_cache#{method_suffix}"
+        define_method with_perma_cache_method_name do
           instance_variable_set(was_rebuilt_inst_var , false)
 
           send("#{method_name}_get_perma_cache") ||
-          (
-            instance_variable_set(was_rebuilt_inst_var , true) &&
-            send("#{method_name}!")
+            (
+              instance_variable_set(was_rebuilt_inst_var , true) &&
+              send("#{method_name}!")
           )
         end
 
@@ -104,7 +105,9 @@ module PermaCache
           instance_variable_get(was_rebuilt_inst_var ) == true
         end
 
-        alias_method_chain [method_base, method_suffix].join, :perma_cache
+        base_name = [method_base, method_suffix].join
+        alias_method [[method_base, 'without', 'perma_cache'].compact.join('_'), method_suffix].join, base_name
+        alias_method base_name, with_perma_cache_method_name
       end
     end
   end
