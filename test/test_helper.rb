@@ -3,7 +3,7 @@ require 'bundler/setup'
 
 require 'byebug'
 require 'minitest/autorun'
-require 'mocha/mini_test'
+require 'mocha/minitest'
 require 'shoulda'
 
 require 'perma_cache'
