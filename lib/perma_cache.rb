@@ -13,12 +13,12 @@ module PermaCache
     @version ||= 1
   end
 
-  def self.cache
-    @cache || raise(UndefinedCache, "Please define a cache object: (PermaCache.cache = Rails.cache)")
-  end
-
   def self.cache=(c)
     @cache = c
+  end
+
+  def self.cache
+    @cache ||= raise(UndefinedCache, "Please define a cache object: (PermaCache.cache = Rails.cache)")
   end
 
   def self.build_key_from_object(obj)
