@@ -6,7 +6,8 @@ gemspec
 gem "bundler"
 gem "rake"
 gem "minitest"
-gem "shoulda"
+gem "shoulda-context"
+gem "shoulda-matchers"
 gem "mocha"
 gem "byebug"
 
