@@ -5,12 +5,12 @@ require "perma_cache/version"
 module PermaCache
   class UndefinedCache < StandardError ; end
 
-  def self.version= v
+  def self.version=(v)
     @version = v
   end
 
   def self.version
-    @version || 1
+    @version ||= 1
   end
 
   def self.cache
