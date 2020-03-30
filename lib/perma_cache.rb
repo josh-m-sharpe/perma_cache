@@ -18,7 +18,11 @@ module PermaCache
   end
 
   def self.cache
-    @cache ||= raise(UndefinedCache, "Please define a cache object: (PermaCache.cache = Rails.cache)")
+    if defined?(@cache) && @cache.is_a?(Symbol)
+      @cache = @cache.to_s.classify.constantize
+    else
+      @cache ||= raise(UndefinedCache, "Please define a cache object: (PermaCache.cache = Rails.cache)")
+    end
   end
 
   def self.build_key_from_object(obj)
